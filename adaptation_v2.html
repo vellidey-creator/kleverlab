@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Адаптация аккаунт-менеджера | Klever Lab</title>
+<style>
+  :root {
+    --green: #A8E63D;
+    --dark: #1A1A1A;
+    --grey: #F2F2F2;
+    --grey-mid: #E0E0E0;
+    --white: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #666666;
+    --green-dark: #6BA825;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: var(--grey); color: var(--text); line-height: 1.6; }
+
+  /* HEADER */
+  .header { background: var(--dark); color: white; padding: 40px 32px 32px; }
+  .header-logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; margin-bottom: 8px; }
+  .header-logo span { color: var(--green); }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .header p { color: #AAAAAA; font-size: 14px; }
+
+  /* NAV */
+  .nav { background: var(--white); border-bottom: 3px solid var(--green); padding: 0 32px; display: flex; gap: 4px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .nav a { display: block; padding: 14px 16px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; white-space: nowrap; }
+  .nav a:hover { color: var(--dark); border-color: var(--green); }
+
+  /* MAIN */
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SECTION */
+  .section { background: white; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--green); }
+  .section-icon { font-size: 24px; }
+  .section-title { font-size: 20px; font-weight: 700; color: var(--dark); }
+  .section-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* WEEK BADGE */
+  .week-badge { display: inline-block; background: var(--dark); color: var(--green); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.5px; }
+
+  /* BLOCK */
+  .block { margin-bottom: 20px; }
+  .block-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+  /* TASK */
+  .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: var(--grey); border-left: 3px solid transparent; transition: background 0.2s; }
+  .task:hover { background: #EAFFC8; border-color: var(--green); }
+  .task-check { width: 18px; height: 18px; border: 2px solid var(--grey-mid); border-radius: 4px; flex-shrink: 0; margin-top: 2px; cursor: pointer; transition: all 0.2s; }
+  .task-check:hover { border-color: var(--green); }
+  .task-check.done { background: var(--green); border-color: var(--green); display: flex; align-items: center; justify-content: center; }
+  .task-check.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+  .task-text { flex: 1; font-size: 14px; color: var(--text); }
+  .task-link { display: inline-block; margin-top: 4px; font-size: 12px; color: var(--green-dark); text-decoration: none; font-weight: 600; }
+  .task-link:hover { text-decoration: underline; }
+
+  /* INFO BOX */
+  .info-box { border-left: 4px solid var(--green); background: #F5FDE8; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px; font-size: 14px; }
+  .info-box strong { display: block; margin-bottom: 4px; color: var(--dark); }
+
+  /* RULE */
+  .rule { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--grey); border-radius: 8px; margin-bottom: 6px; font-size: 14px; }
+  .rule-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 5px; }
+
+  /* LINK CARD */
+  .link-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--grey); border-radius: 8px; margin-bottom: 8px; text-decoration: none; color: var(--text); transition: background 0.2s; border-left: 3px solid var(--green); }
+  .link-card:hover { background: #EAFFC8; }
+  .link-card-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .link-card-title { font-size: 14px; font-weight: 700; color: var(--green-dark); }
+  .link-card-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ZONES */
+  .zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+  .zone { padding: 14px; border-radius: 8px; text-align: center; }
+  .zone-green { background: #EAFFC8; border: 2px solid var(--green); }
+  .zone-yellow { background: #FFFDE8; border: 2px solid #F5D400; }
+  .zone-red { background: #FFF0F0; border: 2px solid #FF5A5A; }
+  .zone-emoji { font-size: 22px; margin-bottom: 6px; }
+  .zone-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .zone-desc { font-size: 12px; color: var(--muted); }
+
+  /* THREE WHALES */
+  .whales { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+  .whale { background: var(--dark); color: white; border-radius: 10px; padding: 16px; text-align: center; }
+  .whale-emoji { font-size: 28px; margin-bottom: 8px; }
+  .whale-title { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 6px; }
+  .whale-desc { font-size: 12px; color: #AAAAAA; }
+
+  /* PROGRESS */
+  .progress-bar { display: flex; gap: 4px; margin-bottom: 24px; }
+  .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--grey-mid); }
+  .progress-step.active { background: var(--green); }
+
+  /* GOLDEN RULES */
+  .golden-rules { counter-reset: rules; }
+  .golden-rule { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--grey-mid); }
+  .golden-rule:last-child { border-bottom: none; }
+  .rule-num { counter-increment: rules; width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: var(--dark); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .rule-text { font-size: 14px; padding-top: 4px; }
+
+  /* FOOTER */
+  .footer { background: var(--dark); color: white; text-align: center; padding: 28px; margin-top: 32px; }
+  .footer-text { color: var(--green); font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .footer-sub { color: #AAAAAA; font-size: 13px; }
+
+  @media (max-width: 600px) {
+    .zones, .whales { grid-template-columns: 1fr; }
+    .nav { gap: 0; }
+    .nav a { padding: 10px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">KLEVER<span>LAB</span></div>
+  <h1>👋 Добро пожаловать в команду!</h1>
+  <p>Система адаптации аккаунт-менеджера · Первые 4 недели</p>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#start">🚀 Дни 1–3</a>
+  <a href="#week1">Неделя 1</a>
+  <a href="#week2">Неделя 2</a>
+  <a href="#week3">Неделя 3</a>
+  <a href="#week4">Неделя 4</a>
+  <a href="#basics">📚 Основы</a>
+  <a href="#tools">🔧 Инструменты</a>
+  <a href="#rules">⚡ Правила</a>
+</nav>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- БЛОК 0: О роли -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="about">
+  <div class="section-header">
+    <span class="section-icon">🎯</span>
+    <div>
+      <div class="section-title">Кто такой аккаунт-менеджер в Klever Lab</div>
+      <div class="section-subtitle">Твоя роль и главная миссия</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>Аккаунт-менеджер — это доверенное лицо клиента внутри компании.</strong>
+    Ты обеспечиваешь коммуникацию между клиентом и специалистами. От тебя зависит уровень удовлетворённости клиента и длительность сотрудничества с компанией.
+  </div>
+
+  <div class="whales">
+    <div class="whale">
+      <div class="whale-emoji">🛎</div>
+      <div class="whale-title">Сервис</div>
+      <div class="whale-desc">Отвечаем в чате в течение 15 минут. Максимально подробно объясняем клиенту каждый шаг</div>
+    </div>
+    <div class="whale">
+      <div class="whale-emoji">🤝</div>
+      <div class="whale-title">Отношения</div>
+      <div class="whale-desc">Поддерживаем открытые и доверительные отношения. Умеем определять настроение клиента</div>
+    </div>
+    <div class="whale">
+      <div class="whale-emoji">🔍</div>
+      <div class="whale-title">Контроль</div>
+      <div class="whale-desc">Контролируем все задачи от клиента к маркетологу. Переводим технический язык в понятный</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <div class="block-title">Статусы клиентов</div>
+    <div class="zones">
+      <div class="zone zone-green">
+        <div class="zone-emoji">🟢</div>
+        <div class="zone-title">Зелёный</div>
+        <div class="zone-desc">Всё хорошо. Удерживаем отношения, предлагаем допродажи</div>
+      </div>
+      <div class="zone zone-yellow">
+        <div class="zone-emoji">🟡</div>
+        <div class="zone-title">Жёлтый</div>
+        <div class="zone-desc">Были косяки или нет коммуникации 3 недели. Переводим в зелёный</div>
+      </div>
+      <div class="zone zone-red">
+        <div class="zone-emoji">🔴</div>
+        <div class="zone-title">Красный</div>
+        <div class="zone-desc">Плохие отношения. Ежедневный контакт, убрать хотя бы в жёлтый</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px;" class="info-box">
+    ⚠️ <strong>Главное правило:</strong> Никогда не обсуждай клиентов компании вне стен компании. Ни в хорошем ключе, ни в плохом.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- ДНИ 1–3 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="start">
+  <div class="section-header">
+    <span class="section-icon">🚀</span>
+    <div>
+      <div class="section-title">Дни 1–3 · Старт</div>
+      <div class="section-subtitle">Познакомься с командой и компанией</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-step active"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🏢 Ценности и команда</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Тур по офису и знакомство с коллегами (проводит руководитель)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Познакомиться с Ильёй / Сашей — они транслируют ценности компании новичкам</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить сайт и соцсети
+      <a class="task-link" href="https://kleverlab.ru/" target="_blank">→ kleverlab.ru</a>
+      <a class="task-link" href="https://vk.com/klever_lab_pro" target="_blank">→ ВКонтакте</a>
+    </div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📋 Административные задачи</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить велком-бук и добавить себя в свой отдел (не в конец списка, а по дате рождения)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Заполнить и подписать договор, приложить копию паспорта → оставить Наталье Николаевне</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Обсудить порядок прохождения стажировки и график работы с руководителем</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Согласовать формат письменного отчёта по дню и время его составления</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Получить доступ в чаты: <strong>Аккаунтинг, Вопросы по маркетингу, Клевер Лаб</strong> (запросить у руководителя после получения корпоративной сим-карты)</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📚 Первые материалы для изучения</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Регламент работы KLEVER LAB</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить таблицу KPI
+      <a class="task-link" href="https://docs.google.com/spreadsheets/d/1FVM7eNImL7GLgJBlbWln1brToNRXKIN9BFPO1JLmDwY/edit?gid=1502367947#gid=1502367947" target="_blank">→ Открыть таблицу</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить книгу аккаунт-менеджера
+      <a class="task-link" href="https://app.weeek.net/ws/613391/kb/13" target="_blank">→ Открыть книгу</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить основные обязанности аккаунта
+      <a class="task-link" href="https://app.weeek.net/ws/613391/kb/15" target="_blank">→ Открыть документ</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить 4 уровня аккаунт-менеджера
+      <a class="task-link" href="https://drive.google.com/file/d/1QyqHkVKOzRRkHyYjhRTX-GKd2uWF2AzK/view" target="_blank">→ Открыть файл</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить статью «Возможности контекстной рекламы»
+      <a class="task-link" href="https://disk.yandex.ru/i/PZW25BnoGYE9SA" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить презентацию о контекстной рекламе
+      <a class="task-link" href="https://disk.yandex.ru/i/WhAYg9YkBJk7jg" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Принять участие в планёрке с маркетологами (по вторникам)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить таблицу эффективности по проектам
+      <a class="task-link" href="https://docs.google.com/spreadsheets/d/15vSFnXG2rumEml8_OZYzJ8vNznh23cUnta031Rov0TY/edit?gid=913221855#gid=913221855" target="_blank">→ Открыть таблицу</a>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- НЕДЕЛЯ 1 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="week1">
+  <div class="section-header">
+    <span class="section-icon">📅</span>
+    <div>
+      <div class="section-title">Неделя 1 · Обучение и погружение</div>
+      <div class="section-subtitle">Изучи документы, войди в ритм команды</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📖 Документы и регламенты</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить «3 кита аккаунта» (Сервис · Отношения · Контроль)
+      <a class="task-link" href="https://app.weeek.net/ws/613391/kb/14" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить бизнес-процесс аккаунтинга
+      <a class="task-link" href="#bp">→ Смотреть схему ниже ↓</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить бриф
+      <a class="task-link" href="https://docs.google.com/spreadsheets/d/1me82xp7bXlwbOScTmcNOdwyl81YSrDRRhY5BPF4qe64/edit#gid=1357924383" target="_blank">→ Открыть бриф</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить пример отчёта по проекту за период
+      <a class="task-link" href="https://drive.google.com/drive/folders/1LiW2zBHILsJjAr1Pa7a4Y7nsueKPLqqp?usp=drive_link" target="_blank">→ Открыть примеры</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Почитать, что такое ЗРС (законченная работа сотрудника)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить «Что можно сделать лучше»
+      <a class="task-link" href="https://app.weeek.net/ws/613391/kb/21" target="_blank">→ Открыть</a>
+    </div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">💬 Коммуникация с клиентами</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по переписке с клиентами
+      <a class="task-link" href="https://disk.yandex.ru/i/CzeXeWWWmcsCWQ" target="_blank">→ Открыть гайд</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить дорожную карту созвона
+      <a class="task-link" href="https://docs.google.com/document/d/1ICh69znwdwpk61-DqU4vnPxBjltAc8gmDgfWfYuBxOQ/edit?tab=t.0#heading=h.xn785l1n6tt" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по созвонам
+      <a class="task-link" href="https://docs.google.com/document/d/1Y9HfzURPwJqBTVLikyq8Y-eZQBGADnIze7n8wMZAYmI/edit?tab=t.0" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить скрипты по всем этапам работ
+      <a class="task-link" href="https://disk.yandex.ru/d/u5D44DnMc8PXDw" target="_blank">→ Открыть скрипты</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по видам кризисов с клиентом
+      <a class="task-link" href="https://docs.google.com/document/d/1bHK1Y0Kw9MipOPYa-x5HE2elZPEj7CUJeWaRASNbLqE/edit?tab=t.0" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить полезные шаблоны сообщений
+      <a class="task-link" href="https://docs.google.com/document/d/1LInfTlyNRKnqXWtzkt_WPqePHQZDzdtgaP4sN4uWyF0/edit?tab=t.0" target="_blank">→ Открыть шаблоны</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Почитать подготовки и итоги созвонов в рабочем чате аккаунтинга</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🔧 Инструменты и доступы</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Создать рабочие почты</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Получить доступ к календарю встреч Klever Lab
+      <a class="task-link" href="https://calendar.google.com/calendar/u/0/r/week/2026/2/8" target="_blank">→ Открыть календарь</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить 4–5 чатов с клиентами (попроси коллегу, зайди через WhatsApp Web)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Принять участие в планёрке отдела аккаунтинга (по средам)</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🎓 Продукт — контекстная реклама</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить, что такое контекстная реклама (база)
+      <a class="task-link" href="https://app.weeek.net/ws/613391/kb/22" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Посмотреть серию видео-уроков по Директу
+      <a class="task-link" href="https://disk.yandex.ru/d/-RH_FutLbR0AYA" target="_blank">→ Открыть уроки</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Читать книгу «Яндекс.Директ» — Филипп Царевский (найди в Notion или попроси коллег)
+      <a class="task-link" href="https://www.notion.so/ff90685250fc42ff80c0c8f7fb443473" target="_blank">→ Ссылка в Notion</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Выписывать вопросы по продукту → разбирать с руководителем на 1-on-1</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🤖 AI-тренер</div>
+    <div class="info-box">
+      <strong>Начни тренировки с AI-тренером отдела сопровождения</strong>
+      Робот симулирует сообщения от клиентов — ты отвечаешь, он даёт обратную связь. 4 уровня сложности. Начинай с лёгкого.
+    </div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Зайти в ChatGPT: занять слот по ссылке, затем перейти к AI-тренеру
+      <a class="task-link" href="https://clck.ru/3KCcQV" target="_blank">→ Занять слот</a>
+      <a class="task-link" href="https://chatgpt.com/g/g-67e957325f3881919d6beefec11bb981-ii-trener-otdel-soprovozdeniia" target="_blank">→ AI-тренер</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Пройти первую тренировку (лёгкий уровень, ~30–40 минут) → отправить итоги руководителю</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- НЕДЕЛЯ 2 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="week2">
+  <div class="section-header">
+    <span class="section-icon">📅</span>
+    <div>
+      <div class="section-title">Неделя 2 · Практика как 2-й аккаунт</div>
+      <div class="section-subtitle">Наблюдай, слушай, пробуй</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🎧 Слушай и учись</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Принять участие в качестве слушателя в 10+ созвонах с клиентами</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">После каждого созвона написать итоги встречи</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Посмотреть 10 записей созвонов, выписать ошибки + как бы поступил иначе → отправить руководителю
+      <a class="task-link" href="https://disk.yandex.ru/d/t3iksYAYc4Kt-A" target="_blank">→ Инструкция по доступу к записям</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Добавиться в чаты первых 5 проектов как 2-й аккаунт</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📚 Продолжение обучения</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по таргету (VK Ads)
+      <a class="task-link" href="https://disk.yandex.ru/d/byb7dKGOwsLmRQ" target="_blank">→ Открыть гайд</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по сквозной аналитике
+      <a class="task-link" href="https://disk.yandex.ru/i/DOmUJDWV3pS_dw" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить, что такое Callibri и Roistat
+      <a class="task-link" href="https://disk.yandex.ru/i/6k2h2lM70nqstQ" target="_blank">→ Гайд Callibri</a>
+      <a class="task-link" href="https://disk.yandex.ru/i/digKqZmHZVYmtw" target="_blank">→ Гайд Roistat</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по Коллтач
+      <a class="task-link" href="https://disk.yandex.ru/i/dYsCy1fz_K2-hg" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по Битрикс24
+      <a class="task-link" href="https://disk.yandex.ru/i/jWfr5AKkjIZrrw" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по Amo CRM
+      <a class="task-link" href="https://disk.yandex.ru/i/e5fwNjj3Oz5szw" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по Флэксби и Марквиз
+      <a class="task-link" href="https://disk.yandex.ru/i/gEStYcj-hBxFuA" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить дополнительную информацию по Яндекс.Директу
+      <a class="task-link" href="https://yandex.ru/adv/edu/online/direct" target="_blank">→ Школа Директа</a>
+      <a class="task-link" href="https://yandex.ru/support/direct/" target="_blank">→ Яндекс.Справка</a>
+    </div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📝 Первые самостоятельные задачи</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Написать подготовку к встрече для проекта коллеги (самостоятельно)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по репутации
+      <a class="task-link" href="https://disk.yandex.ru/i/a_Dp_uA0cRFV8g" target="_blank">→ Открыть</a>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- НЕДЕЛЯ 3 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="week3">
+  <div class="section-header">
+    <span class="section-icon">📅</span>
+    <div>
+      <div class="section-title">Неделя 3 · Активное участие</div>
+      <div class="section-subtitle">Веди созвоны, пиши подготовки самостоятельно</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🎯 Практика с проектами</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Самостоятельно написать подготовки ко встречам по проектам коллег</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Принять участие в созвонах по проектам как 2-й аккаунт (активно, не только слушать)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Написать итоги встреч после каждого созвона</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📚 Дополнительные материалы</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по управлению репутацией
+      <a class="task-link" href="https://disk.yandex.ru/i/a_Dp_uA0cRFV8g" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по Ройстату
+      <a class="task-link" href="https://disk.yandex.ru/i/digKqZmHZVYmtw" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Продолжить читать книгу Царевского по Директу</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">One-to-one по продукту с руководителем (разбор вопросов)</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить гайд по передаче проектов (на случай отпуска/больничного)
+      <a class="task-link" href="https://disk.yandex.ru/i/-VqP5iZba9WcOg" target="_blank">→ Открыть</a>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- НЕДЕЛЯ 4 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="week4">
+  <div class="section-header">
+    <span class="section-icon">🏁</span>
+    <div>
+      <div class="section-title">Неделя 4 · Итоги и самостоятельность</div>
+      <div class="section-subtitle">Тестирование, аттестация, дополнительное обучение</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step active"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">✅ Итоговое тестирование</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Пройти итоговое тестирование по материалам адаптации</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Пройти итоговую аттестацию с руководителем</div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Провести one-to-one итоговый с руководителем</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📖 Дополнительное обучение (по желанию)</div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить материалы по УТП
+      <a class="task-link" href="https://vc.ru/marketing/66037-formiruem-utp-dlya-otstroyki-ot-konkurentov-9-rabochih-formul" target="_blank">→ Статья 1</a>
+      <a class="task-link" href="https://sendpulse.com/ru/blog/unique-selling-proposition" target="_blank">→ Статья 2</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить материалы по эффективному сайту
+      <a class="task-link" href="https://vc.ru/u/276395-yuliya-chmyhalo/374142-sayt-kompanii-v-2022-godu-struktura-layfhaki" target="_blank">→ Статья 1</a>
+      <a class="task-link" href="https://yagla.ru/blog/povyshenie-konversii/kak-sdelat-konversionnyy-lending-vse-vazhnye-momenty/" target="_blank">→ Статья 2</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить файл по общению в личке с клиентами
+      <a class="task-link" href="https://docs.google.com/document/d/1VUmwOBuNHzmPe891XDAEaF6iVTWcSpV0ZR-LFQYFMQU/edit?tab=t.0" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить регламент допродаж
+      <a class="task-link" href="https://docs.google.com/spreadsheets/d/1clemHvgjTvDaxxJ1qmYbYCNAdw50O7yBDi66DVONNUI/edit?gid=0#gid=0" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Изучить дополнительные методологии общения с клиентами
+      <a class="task-link" href="https://docs.google.com/document/d/1zUU1AnTkm1BdUVyyaHuVIXmLAN2Wurq8KRmHxtqvPTc/edit?tab=t.0" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Почему важно отстаивать границы с клиентом
+      <a class="task-link" href="https://docs.google.com/document/d/1fashEufzw1pdCdh5SR1AgR9h5qneosR-/edit" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Гайд по отслеживанию продаж клиента
+      <a class="task-link" href="https://docs.google.com/document/d/1xUkP6TnBULRcRvc_yZ2Tvn1rpiNgo-z1/edit" target="_blank">→ Открыть</a>
+    </div></div>
+    <div class="task"><div class="task-check"></div><div class="task-text">Гайд «Больше личности в общении»
+      <a class="task-link" href="https://docs.google.com/document/d/1fNlZi9RsxlqOIWGdGK5uEo7umXASB80e/edit" target="_blank">→ Открыть</a>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- БАЗА ЗНАНИЙ И ССЫЛКИ -->
+<!-- ══════════════════════════════════════════ -->
+
+<div class="section" id="bp" style="padding:0;overflow:hidden">
+  <div style="padding:28px 28px 20px">
+    <div class="section-header">
+      <span class="section-icon">🔄</span>
+      <div>
+        <div class="section-title">Основной бизнес-процесс аккаунтинга</div>
+        <div class="section-subtitle">Разработка и сопровождение проекта — полный цикл</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 28px 28px">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="showPhase('dev')" id="btn-dev" style="padding:7px 16px;border-radius:20px;border:none;background:#A8E63D;color:#1A1A1A;font-weight:700;font-size:13px;cursor:pointer">🚀 Разработка</button>
+      <button onclick="showPhase('sup')" id="btn-sup" style="padding:7px 16px;border-radius:20px;border:2px solid #E0E0E0;background:white;color:#666;font-weight:600;font-size:13px;cursor:pointer">📊 Сопровождение</button>
+    </div>
+
+    <!-- ФАЗА 1: РАЗРАБОТКА -->
+    <div id="phase-dev">
+      <svg width="100%" viewBox="0 0 680 1020" role="img">
+        <title>Бизнес-процесс: Разработка проекта</title>
+        <desc>Схема основного бизнес-процесса разработки рекламного проекта в Klever Lab</desc>
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- ЛЕГЕНДА -->
+        <g>
+          <rect x="20" y="10" width="640" height="36" rx="8" fill="#F2F2F2" stroke="#E0E0E0" stroke-width="0.5"/>
+          <rect x="34" y="20" width="14" height="14" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="ts" x="54" y="30" dominant-baseline="central" fill="#444">Аккаунт</text>
+          <rect x="124" y="20" width="14" height="14" rx="3" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+          <text class="ts" x="144" y="30" dominant-baseline="central" fill="#444">Маркетолог</text>
+          <rect x="234" y="20" width="14" height="14" rx="3" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+          <text class="ts" x="254" y="30" dominant-baseline="central" fill="#444">Рук. ОС</text>
+          <rect x="334" y="20" width="14" height="14" rx="3" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+          <text class="ts" x="354" y="30" dominant-baseline="central" fill="#444">Продавец</text>
+          <rect x="424" y="20" width="14" height="14" rx="4" rx="7" fill="#F2F2F2" stroke="#888" stroke-width="0.5"/>
+          <text class="ts" x="444" y="30" dominant-baseline="central" fill="#444">Решение</text>
+          <rect x="514" y="20" width="14" height="14" rx="3" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="0.5"/>
+          <text class="ts" x="534" y="30" dominant-baseline="central" fill="#444">Старт/Конец</text>
+        </g>
+
+        <!-- СТАРТ -->
+        <g>
+          <rect x="270" y="60" width="140" height="36" rx="18" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="0.5"/>
+          <text class="th" x="340" y="78" text-anchor="middle" dominant-baseline="central" fill="#A8E63D">Начало</text>
+        </g>
+        <line x1="340" y1="96" x2="340" y2="120" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ПЕРЕДАЧА ПРОЕКТА -->
+        <g>
+          <rect x="210" y="120" width="260" height="44" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+          <text class="th" x="340" y="136" text-anchor="middle" dominant-baseline="central" fill="#791F1F">Инициировать передачу</text>
+          <text class="ts" x="340" y="154" text-anchor="middle" dominant-baseline="central" fill="#A32D2D">Продавец</text>
+        </g>
+        <line x1="340" y1="164" x2="340" y2="188" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ОПРЕДЕЛИТЬ АККАУНТА -->
+        <g>
+          <rect x="210" y="188" width="260" height="44" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+          <text class="th" x="340" y="204" text-anchor="middle" dominant-baseline="central" fill="#633806">Определить аккаунта</text>
+          <text class="ts" x="340" y="222" text-anchor="middle" dominant-baseline="central" fill="#854F0B">Руководитель ОС</text>
+        </g>
+        <line x1="340" y1="232" x2="340" y2="256" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ПРИНЯТЬ ПРОЕКТ + ВСТРЕЧА -->
+        <g>
+          <rect x="160" y="256" width="180" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="272" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Принять проект</text>
+          <text class="ts" x="250" y="290" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Аккаунт</text>
+        </g>
+        <g>
+          <rect x="380" y="256" width="140" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+          <text class="th" x="450" y="272" text-anchor="middle" dominant-baseline="central" fill="#27500A">Встреча-знакомство</text>
+          <text class="ts" x="450" y="290" text-anchor="middle" dominant-baseline="central" fill="#3B6D11">Маркетолог</text>
+        </g>
+        <!-- соединители встречи -->
+        <line x1="340" y1="278" x2="380" y2="278" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+        <line x1="340" y1="278" x2="160" y2="278" stroke="var(--border-strong)" stroke-width="1"/>
+
+        <line x1="250" y1="300" x2="250" y2="324" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+        <line x1="450" y1="300" x2="450" y2="360" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="450" y1="360" x2="340" y2="360" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- БРИФ? -->
+        <g>
+          <rect x="170" y="324" width="160" height="36" rx="18" fill="#F2F2F2" stroke="#888780" stroke-width="0.5"/>
+          <text class="th" x="250" y="342" text-anchor="middle" dominant-baseline="central" fill="#444">Бриф заполнен?</text>
+        </g>
+        <text class="ts" x="140" y="370" text-anchor="middle" fill="#A32D2D">Нет</text>
+        <line x1="170" y1="342" x2="100" y2="342" stroke="#A32D2D" stroke-width="1" marker-end="url(#arr)"/>
+        <g>
+          <rect x="20" y="320" width="80" height="44" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+          <text class="th" x="60" y="336" text-anchor="middle" dominant-baseline="central" fill="#791F1F">Запросить</text>
+          <text class="ts" x="60" y="354" text-anchor="middle" dominant-baseline="central" fill="#A32D2D">бриф</text>
+        </g>
+        <text class="ts" x="250" y="380" text-anchor="end" fill="#3B6D11">Есть</text>
+        <line x1="250" y1="360" x2="250" y2="384" stroke="#3B6D11" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- СОЗДАТЬ ЧАТ + ПЛАН РАБОТ -->
+        <g>
+          <rect x="155" y="384" width="190" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="400" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Создать чат с командой</text>
+          <text class="ts" x="250" y="418" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Аккаунт</text>
+        </g>
+        <line x1="250" y1="428" x2="250" y2="452" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- СООБЩИТЬ О СТАРТЕ + ПЛАН -->
+        <g>
+          <rect x="155" y="452" width="190" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="468" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Сообщить о старте</text>
+          <text class="ts" x="250" y="486" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Отправить план работ</text>
+        </g>
+        <line x1="250" y1="496" x2="250" y2="520" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- СЕМАНТИКА -->
+        <g>
+          <rect x="155" y="520" width="190" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+          <text class="th" x="250" y="536" text-anchor="middle" dominant-baseline="central" fill="#27500A">Семантическое ядро</text>
+          <text class="ts" x="250" y="554" text-anchor="middle" dominant-baseline="central" fill="#3B6D11">На согласование → клиент</text>
+        </g>
+        <line x1="250" y1="564" x2="250" y2="588" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ЗАГОЛОВКИ/ТЕКСТЫ -->
+        <g>
+          <rect x="155" y="588" width="190" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+          <text class="th" x="250" y="604" text-anchor="middle" dominant-baseline="central" fill="#27500A">Заголовки и тексты</text>
+          <text class="ts" x="250" y="622" text-anchor="middle" dominant-baseline="central" fill="#3B6D11">На согласование → клиент</text>
+        </g>
+        <line x1="250" y1="632" x2="250" y2="656" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- СТАРТ РК -->
+        <g>
+          <rect x="155" y="656" width="190" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="672" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Сообщить о старте РК</text>
+          <text class="ts" x="250" y="690" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Созвон «Старт РК»</text>
+        </g>
+        <line x1="250" y1="700" x2="250" y2="724" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- СЧЁТ + ОПЛАТА -->
+        <g>
+          <rect x="155" y="724" width="190" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="740" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Отправить счёт</text>
+          <text class="ts" x="250" y="758" text-anchor="middle" dominant-baseline="central" fill="#185FA5">На сопровождение и бюджет</text>
+        </g>
+        <!-- неоплата -->
+        <text class="ts" x="136" y="754" text-anchor="end" fill="#A32D2D">Нет оплаты</text>
+        <line x1="155" y1="746" x2="110" y2="746" stroke="#A32D2D" stroke-width="1" marker-end="url(#arr)"/>
+        <g>
+          <rect x="20" y="724" width="90" height="44" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+          <text class="th" x="65" y="740" text-anchor="middle" dominant-baseline="central" fill="#791F1F">Запросить</text>
+          <text class="ts" x="65" y="758" text-anchor="middle" dominant-baseline="central" fill="#A32D2D">ОС по оплате</text>
+        </g>
+        <line x1="250" y1="768" x2="250" y2="792" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ОТЧЁТНЫЙ СОЗВОН -->
+        <g>
+          <rect x="155" y="792" width="190" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+          <text class="th" x="250" y="808" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Отчётный созвон</text>
+          <text class="ts" x="250" y="826" text-anchor="middle" dominant-baseline="central" fill="#185FA5">+ Итоги встречи</text>
+        </g>
+        <line x1="250" y1="836" x2="250" y2="860" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- ПЕРЕХОД В СОПРОВОЖДЕНИЕ -->
+        <g>
+          <rect x="155" y="860" width="190" height="44" rx="18" fill="#A8E63D" stroke="#7AB82E" stroke-width="0.5"/>
+          <text class="th" x="250" y="876" text-anchor="middle" dominant-baseline="central" fill="#1A1A1A">Переход в сопровождение</text>
+          <text class="ts" x="250" y="894" text-anchor="middle" dominant-baseline="central" fill="#3d3d3d">→ см. вкладку «Сопровождение»</text>
+        </g>
+
+        <!-- ПРАВАЯ КОЛОНКА: подсказки по ключевым шагам -->
+        <g>
+          <rect x="430" y="388" width="230" height="200" rx="10" fill="#F2F2F2" stroke="#E0E0E0" stroke-width="0.5"/>
+          <text class="th" x="545" y="408" text-anchor="middle" dominant-baseline="central" fill="#1A1A1A">📋 Ключевые гайды</text>
+          <text class="ts" x="445" y="430" dominant-baseline="central" fill="#444">→ Гайд: Передача проекта</text>
+          <text class="ts" x="445" y="452" dominant-baseline="central" fill="#444">→ Гайд: 1 СМС в чат клиента</text>
+          <text class="ts" x="445" y="474" dominant-baseline="central" fill="#444">→ Гайд: Роадмап первой встречи</text>
+          <text class="ts" x="445" y="496" dominant-baseline="central" fill="#444">→ Гайд: Получение доступов</text>
+          <text class="ts" x="445" y="518" dominant-baseline="central" fill="#444">→ Гайд: Хранение данных в Б24</text>
+          <text class="ts" x="445" y="540" dominant-baseline="central" fill="#444">→ Гайд: Скрипты переписок</text>
+          <text class="ts" x="445" y="562" dominant-baseline="central" fill="#444">→ Гайд: Старт разработки</text>
+          <text class="ts" x="445" y="580" dominant-baseline="central" fill="#444">→ Гайд: Роадмап созвона Старт РК</text>
+        </g>
+
+        <!-- стрелки к подсказкам -->
+        <line x1="345" y1="406" x2="428" y2="460" stroke="#E0E0E0" stroke-width="0.5" stroke-dasharray="3 3"/>
+        <line x1="345" y1="475" x2="428" y2="497" stroke="#E0E0E0" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+        <!-- Б24 проект -->
+        <g>
+          <rect x="430" y="610" width="230" height="80" rx="10" fill="#F2F2F2" stroke="#E0E0E0" stroke-width="0.5"/>
+          <text class="th" x="545" y="636" text-anchor="middle" dominant-baseline="central" fill="#1A1A1A">⚙️ Параллельно</text>
+          <text class="ts" x="445" y="658" dominant-baseline="central" fill="#444">Создать проект в Б24</text>
+          <text class="ts" x="445" y="676" dominant-baseline="central" fill="#444">Согласовать доп. сервисы</text>
+        </g>
+
+      </svg>
+    </div>
+
+    <!-- ФАЗА 2: СОПРОВОЖДЕНИЕ -->
+    <div id="phase-sup" style="display:none">
+      <svg width="100%" viewBox="0 0 680 720" role="img">
+        <title>Бизнес-процесс: Сопровождение проекта</title>
+        <desc>Схема бизнес-процесса сопровождения проекта в Klever Lab</desc>
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- ЛЕГЕНДА -->
+        <rect x="20" y="10" width="640" height="36" rx="8" fill="#F2F2F2" stroke="#E0E0E0" stroke-width="0.5"/>
+        <rect x="34" y="20" width="14" height="14" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+        <text class="ts" x="54" y="30" dominant-baseline="central" fill="#444">Аккаунт</text>
+        <rect x="124" y="20" width="14" height="14" rx="3" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+        <text class="ts" x="144" y="30" dominant-baseline="central" fill="#444">Маркетолог</text>
+        <rect x="234" y="20" width="14" height="14" rx="3" fill="#F2F2F2" stroke="#888" stroke-width="0.5"/>
+        <text class="ts" x="254" y="30" dominant-baseline="central" fill="#444">Решение</text>
+
+        <!-- СТАРТ -->
+        <rect x="270" y="60" width="140" height="36" rx="18" fill="#1A1A1A"/>
+        <text class="th" x="340" y="78" text-anchor="middle" dominant-baseline="central" fill="#A8E63D">Сопровождение</text>
+        <line x1="340" y1="96" x2="340" y2="120" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr2)"/>
+
+        <!-- ЕЖЕНЕДЕЛЬНО -->
+        <rect x="200" y="120" width="280" height="36" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+        <text class="th" x="340" y="138" text-anchor="middle" dominant-baseline="central" fill="#27500A">Каждую неделю: срез по проекту</text>
+        <line x1="340" y1="156" x2="340" y2="180" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr2)"/>
+
+        <!-- ЕСТЬ УСПЕХИ? -->
+        <rect x="220" y="180" width="240" height="36" rx="18" fill="#F2F2F2" stroke="#888780" stroke-width="0.5"/>
+        <text class="th" x="340" y="198" text-anchor="middle" dominant-baseline="central" fill="#444">Есть успехи в РК?</text>
+
+        <!-- Да -->
+        <text class="ts" x="200" y="228" text-anchor="middle" fill="#3B6D11">Да</text>
+        <line x1="270" y1="198" x2="150" y2="198" stroke="#3B6D11" stroke-width="1"/>
+        <line x1="150" y1="198" x2="150" y2="246" stroke="#3B6D11" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="60" y="246" width="180" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+        <text class="th" x="150" y="262" text-anchor="middle" dominant-baseline="central" fill="#27500A">Написать успехи</text>
+        <text class="ts" x="150" y="280" text-anchor="middle" dominant-baseline="central" fill="#3B6D11">в чат клиента</text>
+
+        <!-- Нет -->
+        <text class="ts" x="480" y="228" text-anchor="middle" fill="#A32D2D">Нет</text>
+        <line x1="460" y1="198" x2="530" y2="198" stroke="#A32D2D" stroke-width="1"/>
+        <line x1="530" y1="198" x2="530" y2="246" stroke="#A32D2D" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="440" y="246" width="180" height="44" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+        <text class="th" x="530" y="262" text-anchor="middle" dominant-baseline="central" fill="#791F1F">Плохие результаты</text>
+        <text class="ts" x="530" y="280" text-anchor="middle" dominant-baseline="central" fill="#A32D2D">→ антикризисный созвон</text>
+
+        <!-- сходятся -->
+        <line x1="150" y1="290" x2="150" y2="350" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="530" y1="290" x2="530" y2="350" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="150" y1="350" x2="340" y2="350" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="530" y1="350" x2="340" y2="350" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="340" y1="350" x2="340" y2="374" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr2)"/>
+
+        <!-- 25 ЧИСЛО — СЧЁТ -->
+        <rect x="200" y="374" width="280" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+        <text class="th" x="340" y="390" text-anchor="middle" dominant-baseline="central" fill="#0C447C">25 число: счёт на след. месяц</text>
+        <text class="ts" x="340" y="408" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Сопровождение + бюджет</text>
+        <line x1="340" y1="418" x2="340" y2="442" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr2)"/>
+
+        <!-- ОТЧЁТНЫЙ СОЗВОН -->
+        <rect x="200" y="442" width="280" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+        <text class="th" x="340" y="458" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Конец месяца: отчётный созвон</text>
+        <text class="ts" x="340" y="476" text-anchor="middle" dominant-baseline="central" fill="#185FA5">Написать итоги встречи</text>
+        <line x1="340" y1="486" x2="340" y2="510" stroke="var(--border-strong)" stroke-width="1" marker-end="url(#arr2)"/>
+
+        <!-- ПРОЕКТ ПРОДОЛЖАЕТСЯ? -->
+        <rect x="210" y="510" width="260" height="36" rx="18" fill="#F2F2F2" stroke="#888780" stroke-width="0.5"/>
+        <text class="th" x="340" y="528" text-anchor="middle" dominant-baseline="central" fill="#444">Проект продолжается?</text>
+
+        <!-- Да — цикл обратно -->
+        <text class="ts" x="174" y="556" text-anchor="middle" fill="#3B6D11">Да</text>
+        <line x1="210" y1="528" x2="60" y2="528" stroke="#3B6D11" stroke-width="1"/>
+        <line x1="60" y1="528" x2="60" y2="138" stroke="#3B6D11" stroke-width="1"/>
+        <line x1="60" y1="138" x2="198" y2="138" stroke="#3B6D11" stroke-width="1" marker-end="url(#arr2)"/>
+        <text class="ts" x="40" y="340" text-anchor="middle" fill="#3B6D11">↻</text>
+
+        <!-- Нет -->
+        <text class="ts" x="510" y="556" text-anchor="middle" fill="#A32D2D">Завершён</text>
+        <line x1="470" y1="528" x2="560" y2="528" stroke="#A32D2D" stroke-width="1"/>
+        <line x1="560" y1="528" x2="560" y2="590" stroke="#A32D2D" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="470" y="590" width="180" height="44" rx="18" fill="#1A1A1A"/>
+        <text class="th" x="560" y="612" text-anchor="middle" dominant-baseline="central" fill="#A8E63D">Конец</text>
+
+        <!-- Подсказки справа -->
+        <rect x="430" y="374" width="0" height="0" rx="0"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPhase(phase) {
+  document.getElementById('phase-dev').style.display = phase === 'dev' ? 'block' : 'none';
+  document.getElementById('phase-sup').style.display = phase === 'sup' ? 'block' : 'none';
+  document.getElementById('btn-dev').style.background = phase === 'dev' ? '#A8E63D' : 'white';
+  document.getElementById('btn-dev').style.border = phase === 'dev' ? 'none' : '2px solid #E0E0E0';
+  document.getElementById('btn-dev').style.color = phase === 'dev' ? '#1A1A1A' : '#666';
+  document.getElementById('btn-sup').style.background = phase === 'sup' ? '#A8E63D' : 'white';
+  document.getElementById('btn-sup').style.border = phase === 'sup' ? 'none' : '2px solid #E0E0E0';
+  document.getElementById('btn-sup').style.color = phase === 'sup' ? '#1A1A1A' : '#666';
+}
+</script>
+
+<div class="section" id="basics">
+  <div class="section-header">
+    <span class="section-icon">📚</span>
+    <div>
+      <div class="section-title">База знаний · Книги и материалы</div>
+      <div class="section-subtitle">Нужные всегда, даже если ты уже опытный сотрудник</div>
+    </div>
+  </div>
+
+  <a class="link-card" href="https://abounding-wildebeest-ae0.notion.site/3bb9236285584b81ba89d7269b3ebe93" target="_blank">
+    <span class="link-card-icon">📖</span>
+    <div>
+      <div class="link-card-title">Большая книга аккаунта (Notion)</div>
+      <div class="link-card-desc">Главная точка входа — все процессы, регламенты и шаблоны</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://app.weeek.net/ws/613391/kb/13" target="_blank">
+    <span class="link-card-icon">🔖</span>
+    <div>
+      <div class="link-card-title">Книга аккаунт-менеджера</div>
+      <div class="link-card-desc">Задачи и функции, деловая коммуникация, работа с конфликтами</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://app.weeek.net/ws/613391/kb/14" target="_blank">
+    <span class="link-card-icon">🐳</span>
+    <div>
+      <div class="link-card-title">Три кита аккаунта</div>
+      <div class="link-card-desc">Сервис · Отношения · Контроль — основа работы</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://drive.google.com/file/d/1QyqHkVKOzRRkHyYjhRTX-GKd2uWF2AzK/view" target="_blank">
+    <span class="link-card-icon">🥋</span>
+    <div>
+      <div class="link-card-title">Четыре уровня аккаунта</div>
+      <div class="link-card-desc">Как разные пояса в боевых искусствах — поверхностный и глубокий уровень знаний</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://disk.yandex.ru/d/u5D44DnMc8PXDw" target="_blank">
+    <span class="link-card-icon">💬</span>
+    <div>
+      <div class="link-card-title">Скрипты для аккаунт-менеджера</div>
+      <div class="link-card-desc">Цепочка касаний, правила чата, разработка РК, частые вопросы клиентов</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://chatgpt.com/g/g-67e957325f3881919d6beefec11bb981-ii-trener-otdel-soprovozdeniia" target="_blank">
+    <span class="link-card-icon">🤖</span>
+    <div>
+      <div class="link-card-title">AI-тренер отдела сопровождения</div>
+      <div class="link-card-desc">Тренируй навык общения с клиентами. Начни с лёгкого уровня. Доступ: kleverlab1ai@gmail.com</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/document/d/1l3AncRieWkAF4YarRS693169Oo7VWPc7EOZfvGc-K-8/edit?tab=t.0" target="_blank">
+    <span class="link-card-icon">⚡</span>
+    <div>
+      <div class="link-card-title">ChatGPT агентства — инструкция</div>
+      <div class="link-card-desc">Как пользоваться корпоративным ChatGPT</div>
+    </div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- ИНСТРУМЕНТЫ -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="tools">
+  <div class="section-header">
+    <span class="section-icon">🔧</span>
+    <div>
+      <div class="section-title">Рабочие инструменты и таблицы</div>
+      <div class="section-subtitle">Используешь каждый день</div>
+    </div>
+  </div>
+
+  <a class="link-card" href="https://docs.google.com/spreadsheets/d/15vSFnXG2rumEml8_OZYzJ8vNznh23cUnta031Rov0TY/edit?gid=913221855#gid=913221855" target="_blank">
+    <span class="link-card-icon">📊</span>
+    <div>
+      <div class="link-card-title">Таблица эффективности по клиентам</div>
+      <div class="link-card-desc">Понедельные срезы к планёркам по вторникам. Цвета: 🔴 проблемы, 🟡 следим, 🟢 всё хорошо</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/spreadsheets/d/1FVM7eNImL7GLgJBlbWln1brToNRXKIN9BFPO1JLmDwY/edit?gid=1502367947#gid=1502367947" target="_blank">
+    <span class="link-card-icon">🎯</span>
+    <div>
+      <div class="link-card-title">Таблица KPI</div>
+      <div class="link-card-desc">Твои показатели эффективности</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/spreadsheets/d/1me82xp7bXlwbOScTmcNOdwyl81YSrDRRhY5BPF4qe64/edit#gid=1357924383" target="_blank">
+    <span class="link-card-icon">📋</span>
+    <div>
+      <div class="link-card-title">Таблица заполненных брифов</div>
+      <div class="link-card-desc">Вся информация от клиента перед стартом проекта</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://calendar.google.com/calendar/u/0/r/week/2026/2/8" target="_blank">
+    <span class="link-card-icon">📅</span>
+    <div>
+      <div class="link-card-title">Календарь встреч Klever Lab</div>
+      <div class="link-card-desc">Все встречи вносятся сразу после договорённости. Шаблон: Клиент // Где // Кто из команды</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/document/d/1LInfTlyNRKnqXWtzkt_WPqePHQZDzdtgaP4sN4uWyF0/edit?tab=t.0" target="_blank">
+    <span class="link-card-icon">✏️</span>
+    <div>
+      <div class="link-card-title">Шаблоны для встреч и итогов</div>
+      <div class="link-card-desc">Подготовки к созвонам, итоги встреч, бриф по новому клиенту</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/document/d/1ICh69znwdwpk61-DqU4vnPxBjltAc8gmDgfWfYuBxOQ/edit?tab=t.0#heading=h.xn785l1n6tt" target="_blank">
+    <span class="link-card-icon">🗺</span>
+    <div>
+      <div class="link-card-title">Дорожная карта созвона</div>
+      <div class="link-card-desc">Структура и подготовка к любому созвону с клиентом</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://docs.google.com/spreadsheets/d/1clemHvgjTvDaxxJ1qmYbYCNAdw50O7yBDi66DVONNUI/edit?gid=0#gid=0" target="_blank">
+    <span class="link-card-icon">💰</span>
+    <div>
+      <div class="link-card-title">Гайд по допродажам</div>
+      <div class="link-card-desc">Как предлагать клиентам дополнительные услуги</div>
+    </div>
+  </a>
+
+  <a class="link-card" href="https://disk.yandex.ru/d/t3iksYAYc4Kt-A" target="_blank">
+    <span class="link-card-icon">🎬</span>
+    <div>
+      <div class="link-card-title">Записи созвонов</div>
+      <div class="link-card-desc">Сервер с записями. Папка «Клиенты» → «Активные». Смотри по порядку, выписывай ошибки</div>
+    </div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- ПРАВИЛА -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="rules">
+  <div class="section-header">
+    <span class="section-icon">⚡</span>
+    <div>
+      <div class="section-title">Золотые правила аккаунта</div>
+      <div class="section-subtitle">Запомни с первого дня</div>
+    </div>
+  </div>
+
+  <div class="golden-rules">
+    <div class="golden-rule"><div class="rule-num">1</div><div class="rule-text"><strong>Выполняй обещания.</strong> Всегда обещай с учётом рисков. Вместо обещаний «на ходу» говори: «мне надо посоветоваться с командой».</div></div>
+    <div class="golden-rule"><div class="rule-num">2</div><div class="rule-text"><strong>Отвечай в течение 15 минут</strong> в рабочее время. Если не знаешь ответа — напиши: «Сейчас уточню и вернусь чуть позже». Клиент не должен чувствовать себя брошенным.</div></div>
+    <div class="golden-rule"><div class="rule-num">3</div><div class="rule-text"><strong>Будь пунктуальным.</strong> Созвон подтверждай за 1–2 часа. Встречу согласовывай за 2–3 дня. Вноси в календарь сразу после договорённости.</div></div>
+    <div class="golden-rule"><div class="rule-num">4</div><div class="rule-text"><strong>На встрече приходи подготовленным.</strong> Читай подготовку до конца. Если не понимаешь что написал маркетолог — подойди и спроси, не отходи пока не поймёшь.</div></div>
+    <div class="golden-rule"><div class="rule-num">5</div><div class="rule-text"><strong>Веди карточки клиентов в Б24.</strong> Все контакты, бюджеты, доступы, важные комментарии — в карточку. Не держи знания в голове.</div></div>
+    <div class="golden-rule"><div class="rule-num">6</div><div class="rule-text"><strong>Не обсуждай клиентов вне компании.</strong> Ни в хорошем ключе, ни в плохом. Ты не знаешь, кто и кому что расскажет.</div></div>
+    <div class="golden-rule"><div class="rule-num">7</div><div class="rule-text"><strong>При демонстрации экрана</strong> открывай нужные документы отдельным окном, не вкладкой. Клиент не должен видеть информацию о других проектах.</div></div>
+    <div class="golden-rule"><div class="rule-num">8</div><div class="rule-text"><strong>Еженедельно по вторникам</strong> — планёрка с маркетологами. По средам — планёрка отдела аккаунтинга. Оба обязательны.</div></div>
+  </div>
+
+  <div style="margin-top: 20px;" class="info-box">
+    <strong>Если не знаешь ответа:</strong>
+    Сначала ищи в Большой книге аккаунта, потом в интернете. Если не нашёл — обращайся к руководителю, коллегам или маркетологам (Даша, Слава, Маша, Ира, Юля).
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-text">Если что-то непонятно — не стесняйся спрашивать. Мы рядом 🙌</div>
+  <div class="footer-sub">Добавь эту страницу в закладки — она будет обновляться</div>
+</div>
+
+<script>
+  // Чекбоксы — состояние сохраняется в localStorage
+  document.querySelectorAll('.task-check').forEach((cb, i) => {
+    const key = 'task_' + i;
+    if (localStorage.getItem(key) === '1') cb.classList.add('done');
+    cb.addEventListener('click', () => {
+      cb.classList.toggle('done');
+      localStorage.setItem(key, cb.classList.contains('done') ? '1' : '0');
+    });
+  });
+</script>
+</body>
+</html>
